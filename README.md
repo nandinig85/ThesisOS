@@ -64,7 +64,7 @@ The **Investment memo** tab summarizes the current thesis run, preserves confirm
 - `app/api/committee-ai/route.ts`, `lib/committee-prompts.ts`, and `lib/ai-mode.ts`: optional four-researcher AI Mode committee plus chair using the existing server-side SerpApi key.
 - `lib/ai-mode-extract.ts`: text block and safe source-link extraction from AI Mode responses.
 
-The `SearchRun` contract is the extension point for further research signals and public-company comparables. Add new evidence providers server-side and link every resulting claim to its source. No API key is prefixed with `NEXT_PUBLIC_`, sent to the browser, or stored in client state. `.env.local` is ignored by Git and should never be committed.
+The `SearchRun` contract is the extension point for further research signals and public-company comparables. Add new evidence providers server-side and link every resulting claim to its source. No API key is prefixed with `NEXT_PUBLIC_`, sent to the browser, or stored in client state. Never commit `.env.local`; this repository does not include a `.gitignore`, so Git will not automatically exclude it.
 
 ## Production notes
 
