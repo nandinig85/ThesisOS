@@ -53,6 +53,7 @@ export function companyName(title: string): string | null {
     .replace(/\s+(?:has\s+)?(raises?|raised|secures?|secured|bags?|bagged|gets?|lands?|announces?|launches?|expands?|plans?|partners?|wins?|eyes|funding)\b.*$/i, "")
     .trim();
   if (name.startsWith("@") || name.length < 3 || name.length > 48 || name.split(/\s+/).length > 5) return null;
+  if (/^electric vehicles?$/i.test(name)) return null;
   if (/\b(start[- ]?ups?|companies|firms?|industry|market|sector|news|report|funding|investment|recycling|battery|batteries|list|top|best|post|updates|stocks)\b/i.test(name)) return null;
   return name;
 }
@@ -183,7 +184,11 @@ export function assembleRun(input: ThesisInput, evidence: Evidence[], queries: S
     if (/recycl/i.test(input.sector) && /\bbattery[- ]swapp|\bafrica(?:n|’s|'s)?\b/i.test(item.title)) continue;
     const name = companyName(item.title);
     if (!name) continue;
-    if (!companyTopicMatch(item, name, input.sector)) continue;
+    const topicEvidence = items.find(source =>
+      !/(?:linkedin\.com|facebook\.com|instagram\.com)$/.test(source.domain) &&
+      companyTopicMatch(source, name, input.sector));
+    if (!topicEvidence) continue;
+    const candidateEvidenceIds = item.id === topicEvidence.id ? [item.id] : [item.id, topicEvidence.id];
     const key = name.toLowerCase();
     if (/\b(seed|series\s*a|pre[- ]?seed)\b/i.test(input.stage) && /\bIPO\b|\bpublic listing\b|\bplans to list\b/i.test(item.title)) {
       excludedNames.add(key);
@@ -201,7 +206,7 @@ export function assembleRun(input: ThesisInput, evidence: Evidence[], queries: S
     if (excludedNames.has(key)) continue;
     const existing = startupMap.get(key);
     if (existing) {
-      existing.evidenceIds.push(item.id);
+      for (const id of candidateEvidenceIds) if (!existing.evidenceIds.includes(id)) existing.evidenceIds.push(id);
       if (funding && existing.fundingStatus === "unavailable") {
         existing.funding = funding;
         existing.fundingStatus = "inferred";
@@ -221,7 +226,7 @@ export function assembleRun(input: ThesisInput, evidence: Evidence[], queries: S
       startupMap.set(key, {
         id: `company-${startupMap.size + 1}`,
         name,
-        description: item.snippet.toLowerCase().includes(name.toLowerCase()) ? item.snippet : item.title,
+        description: topicEvidence.snippet.toLowerCase().includes(name.toLowerCase()) ? topicEvidence.snippet : topicEvidence.title,
         nameStatus: "inferred",
         funding: funding || "No funding figure in cited search preview",
         fundingStatus: funding ? "inferred" : "unavailable",
@@ -229,7 +234,7 @@ export function assembleRun(input: ThesisInput, evidence: Evidence[], queries: S
         geographyStatus: located ? "inferred" : "unavailable",
         stage: stage || "Not established in cited preview",
         stageStatus: stage ? "inferred" : "unavailable",
-        evidenceIds: [item.id],
+        evidenceIds: candidateEvidenceIds,
         ...(funding ? { fundingEvidenceId: item.id } : {}),
         ...(located ? { geographyEvidenceId: item.id } : {}),
         ...(stage ? { stageEvidenceId: item.id } : {}),

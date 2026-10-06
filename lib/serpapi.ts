@@ -24,9 +24,8 @@ function countryCode(geography: string): string | undefined {
 
 export function buildQueries(input: ThesisInput): SearchSpec[] {
   const context = `${input.sector} ${input.geography}`;
-  const stage = input.stage === "Seed–Series A" ? "seed OR series A" : input.stage;
   return [
-    { label: "Startup discovery", engine: "search", query: `${context} startup ${stage} funding` },
+    { label: "Startup discovery", engine: "search", query: `${context} startup funding` },
     { label: "Company landscape", engine: "search", query: `${context} startups companies founders` },
     { label: "Market developments", engine: "news", query: `${context} funding market` },
     { label: "Policy and risks", engine: "news", query: `${context} regulation policy risk` },

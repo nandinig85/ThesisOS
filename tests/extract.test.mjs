@@ -106,6 +106,19 @@ test("finds named companies in news without treating generic funding headlines a
   assert.equal(run.startups[0].fundingStatus, "inferred");
 });
 
+test("connects a funding headline to separate company-specific sector evidence", () => {
+  const evidence = normalizeResults({ news_results: [
+    { title: "BatX Energies raises ₹105 crore in Series A funding", link: "https://news.example.com/batx-funding" },
+    { title: "BatX Energies expands battery recycling operations", link: "https://news.example.com/batx-recycling" },
+    { title: "JBM Ecolife raises funding for EV buses", link: "https://news.example.com/jbm" },
+  ] }, "news", "EV battery recycling India");
+  const run = assembleRun(thesis, evidence, [], []);
+  assert.deepEqual(run.startups.map(item => item.name), ["BatX Energies"]);
+  assert.equal(run.startups[0].stage, "Series A");
+  assert.deepEqual(run.startups[0].evidenceIds, [evidence[0].id, evidence[1].id]);
+  assert.match(run.startups[0].description, /battery recycling/);
+});
+
 test("excludes explicitly out-of-stage companies and old headlines", () => {
   const evidence = [
     ...normalizeResults({ news_results: [
@@ -176,4 +189,5 @@ test("another sector requires more than one generic topic word", () => {
 
 test("removes a generic business descriptor from company names", () => {
   assert.equal(companyName("Cold Storage Maker Ecozen raises funding"), "Ecozen");
+  assert.equal(companyName("Electric vehicle"), null);
 });
