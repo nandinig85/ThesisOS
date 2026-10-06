@@ -6,11 +6,18 @@ A working vertical slice for the SerpApi India Hackathon. Enter a sector, geogra
 
 Requirements: Node.js 20.9+ and a [SerpApi key](https://serpapi.com/manage-api-key).
 
+Create a file named `.env.local` in the project root with this line, replacing the placeholder with your own key:
+
+```text
+SERPAPI_API_KEY=your_serpapi_key_here
+```
+
+Keep `.env.local` private and do not upload it to GitHub.
+
+Then run:
+
 ```bash
-cd outputs/thesis-intelligence
 npm install
-cp .env.example .env.local
-# Edit .env.local and set SERPAPI_API_KEY
 npm run dev
 ```
 
